@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Joystick;
@@ -46,14 +47,26 @@ public class SwerveJoystick extends Command {
         ySpeed = Math.abs(ySpeed) > IOConstants.kDeadband ? ySpeed : 0.0;
         turningSpeed = Math.abs(turningSpeed) > IOConstants.kDeadband ? turningSpeed : 0.0;
 
+        //scale to meters per second
+        xSpeed = xSpeed*DriveConstants.MAX_SPEED_METER_PER_SECCONDS;
+        ySpeed = ySpeed*DriveConstants.MAX_SPEED_METER_PER_SECCONDS;
+        turningSpeed = turningSpeed*DriveConstants.MAX_SPEED_METER_PER_SECCONDS;
+
+
         //LOG FINAL VALUES
         SmartDashboard.putNumber("Joystick/xSpeedFinal", xSpeed);
         SmartDashboard.putNumber("Joystick/ySpeedFinal", ySpeed);
         SmartDashboard.putNumber("Joystick/turningSpeedFinal", turningSpeed);
 
-        SwerveModuleState [] desiredSwerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed,ySpeed,turningSpeed, swerveDrive.getMeasuredAngle()));
+        ChassisSpeeds chassisSpeed = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
+        Logger.recordOutput(getName()+"/ChassisSpeed", chassisSpeed);
+
+        SwerveModuleState [] desiredSwerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeed);
         //Using recordOutputs allows for AdvantageScope integraiton during simulation to see in the UI each ServeModule vector and angle
-        Logger.recordOutput(getName(), desiredSwerveModuleStates);
+        Logger.recordOutput(getName()+"/DesiredSwerveModuleStates", desiredSwerveModuleStates);
+        double [] moduleAnglesInDegrees = {desiredSwerveModuleStates[0].angle.getDegrees(), desiredSwerveModuleStates[1].angle.getDegrees(), desiredSwerveModuleStates[2].angle.getDegrees(), desiredSwerveModuleStates[3].angle.getDegrees()};
+        Logger.recordOutput(getName()+"/ModuleAngesInDegrees", moduleAnglesInDegrees);
+        Logger.recordOutput(getName()+"/CounterClockwiseBy90Degrees",Rotation2d.kCW_90deg.getDegrees());
         swerveDrive.setModuleStates(desiredSwerveModuleStates);
     }
 }

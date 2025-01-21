@@ -82,6 +82,9 @@ dependencies {
     //AdvantageKit dependency
     def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
     annotationProcessor "org.littletonrobotics.akit:akit-autolog:$akitJson.version"
+
+    def deduxLibIMU = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/ReduxLib-2025.0.0.json").text)
+    implementation("com.reduxrobotics.frc:ReduxLib-java:$deduxLibIMU.version")
 }
 
 test {
