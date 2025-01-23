@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.DriveConstants;
 
 public class SwerveDrive extends SubsystemBase {
-    private final Canandgyro m_imu = new Canandgyro(DriveConstants.kIMUCanID);
+    private final Canandgyro m_imu = new Canandgyro(DriveConstants.IMU_CAN_ID);
     private SwerveModuleIOInputsAutoLogged[] inputs = {new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged()};
     private SwerveModule[] swerveModules = new SwerveModule[4];
     private SwerveModulePosition[] lastSwerveModulePositions = new SwerveModulePosition[4];

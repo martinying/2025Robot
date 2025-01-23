@@ -20,9 +20,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.constants.DriveConstants;
+import frc.robot.constants.PreferenceKeys;
 
 public class SwerveModule {
 
@@ -130,7 +132,7 @@ public class SwerveModule {
         desiredSwerveModuleStates.optimize(getAbsoluteEncoderPosition());
 
         //omega (angular velocity in radians per second) = velocity/radius
-        double desiredSpeedOfTheWheelInAngularVelocity = desiredSwerveModuleStates.speedMetersPerSecond/DriveConstants.WHEEL_RADIUS;
+        double desiredSpeedOfTheWheelInAngularVelocity = desiredSwerveModuleStates.speedMetersPerSecond/Preferences.getDouble(PreferenceKeys.WHEEL_RADIUS_METERS, DriveConstants.WHEEL_RADIUS_DEFAULT_VALUE);
         Rotation2d desiredAngleOfTheWheel = desiredSwerveModuleStates.angle;
 
         turnMotorController.setControl(turnPositionInput.withPosition(desiredAngleOfTheWheel.getRotations()));//expect rotations
@@ -154,7 +156,7 @@ public class SwerveModule {
 
     //needed to simulate gyro and for odometry
     public SwerveModulePosition getPosition(SwerveModuleIOInputs inputs) {
-        return new SwerveModulePosition(inputs.drivePositionRad * DriveConstants.WHEEL_RADIUS, inputs.absoluteEncoderPosition);
+        return new SwerveModulePosition(inputs.drivePositionRad * Preferences.getDouble(PreferenceKeys.WHEEL_RADIUS_METERS, DriveConstants.WHEEL_RADIUS_DEFAULT_VALUE), inputs.absoluteEncoderPosition);
     }
 
     private Rotation2d getAbsoluteEncoderPosition() {
