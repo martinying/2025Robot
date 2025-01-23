@@ -152,7 +152,7 @@ public class SwerveModule {
         turnMotorControllerSimState.setRawRotorPosition(turnMotorSim.getAngularPosition());
     }
 
-    //currently only used to help simulate gyro
+    //needed to simulate gyro and for odometry
     public SwerveModulePosition getPosition(SwerveModuleIOInputs inputs) {
         return new SwerveModulePosition(inputs.drivePositionRad * DriveConstants.WHEEL_RADIUS, inputs.absoluteEncoderPosition);
     }

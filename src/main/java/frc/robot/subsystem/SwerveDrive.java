@@ -1,10 +1,13 @@
 package frc.robot.subsystem;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 import com.reduxrobotics.sensors.canandgyro.Canandgyro;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -15,15 +18,23 @@ public class SwerveDrive extends SubsystemBase {
     private final Canandgyro m_imu = new Canandgyro(DriveConstants.kIMUCanID);
     private SwerveModuleIOInputsAutoLogged[] inputs = {new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged()};
     private SwerveModule[] swerveModules = new SwerveModule[4];
-    private SwerveModulePosition[] lastSwerveModulePositions = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
+    private SwerveModulePosition[] lastSwerveModulePositions = new SwerveModulePosition[4];
     private SwerveModulePosition[] moduleDeltas = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
     private Rotation2d rawGyroRotation = new Rotation2d();
+    SwerveDriveOdometry odometry;
 
     public SwerveDrive() {
         swerveModules[DriveConstants.FRONT_LEFT_MODULE_INDEX] = new SwerveModule(0,1,2);
         swerveModules[DriveConstants.FRONT_RIGHT_MODULE_INDEX] = new SwerveModule(3,4,5);
         swerveModules[DriveConstants.BACK_LEFT_MODULE_INDEX] = new SwerveModule(6,7,8);
         swerveModules[DriveConstants.BACK_RIGHT_MODULE_INDEX] = new SwerveModule(9,10,11);
+
+        //initialize inputs
+        for(int counter = 0; counter < 4; counter++) {
+            swerveModules[counter].updateInputs(inputs[counter]);
+        }
+
+        odometry  = new SwerveDriveOdometry(DriveConstants.kDriveKinematics, getMeasuredAngle(), getModulePositions());
     }
 
     public Rotation2d getMeasuredAngle() {
@@ -69,5 +80,32 @@ public class SwerveDrive extends SubsystemBase {
             swerveModules[counter].updateInputs(inputs[counter]);
             Logger.processInputs("SwerveDrive/Module/"+counter, inputs[counter]);
         }
+
+        //pulled out so we can record the module postions
+        SwerveModulePosition[] currentSwerveModulePositions = getModulePositions();
+        Logger.recordOutput("SwerveDirve/ModulePositions", currentSwerveModulePositions);
+
+        odometry.update(getMeasuredAngle(), currentSwerveModulePositions);
+
+        //may need to handle simulations by doing calculations for gyro
+        //lastSwerveModulePositions = currentSwerveModulePositions;
+        
     }
+
+    @AutoLogOutput(key = "Odometry/Robot")
+    public Pose2d getPose() {
+        return odometry.getPoseMeters();
+    }
+
+    public void setPose(Pose2d pose) {
+        odometry.resetPosition(getMeasuredAngle(), getModulePositions(), pose);
+    }
+
+    private SwerveModulePosition[] getModulePositions() {
+        SwerveModulePosition[] states = new SwerveModulePosition[4];
+        for (int counter = 0; counter < 4; counter++) {
+          states[counter] = swerveModules[counter].getPosition(inputs[counter]);
+        }
+        return states;
+      }
 }
