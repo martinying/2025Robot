@@ -59,14 +59,15 @@ public class SwerveJoystick extends Command {
         SmartDashboard.putNumber("Joystick/ySpeedFinal", ySpeed);
         SmartDashboard.putNumber("Joystick/turningSpeedFinal", turningSpeed);
 
-        ChassisSpeeds chassisSpeed = new ChassisSpeeds(xSpeed, ySpeed, turningSpeed);
+        //IN TELEOP WE WANT FIELD RELATIVE
+        ChassisSpeeds chassisSpeed = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turningSpeed, swerveDrive.getMeasuredAngle());
         Logger.recordOutput(getName()+"/ChassisSpeed", chassisSpeed);
 
         SwerveModuleState [] desiredSwerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeed);
         //Using recordOutputs allows for AdvantageScope integraiton during simulation to see in the UI each ServeModule vector and angle
         Logger.recordOutput(getName()+"/DesiredSwerveModuleStates", desiredSwerveModuleStates);
         double [] moduleAnglesInDegrees = {desiredSwerveModuleStates[0].angle.getDegrees(), desiredSwerveModuleStates[1].angle.getDegrees(), desiredSwerveModuleStates[2].angle.getDegrees(), desiredSwerveModuleStates[3].angle.getDegrees()};
-        Logger.recordOutput(getName()+"/ModuleAngesInDegrees", moduleAnglesInDegrees);
+        Logger.recordOutput(getName()+"/ModuleAnglesInDegrees", moduleAnglesInDegrees);
         Logger.recordOutput(getName()+"/CounterClockwiseBy90Degrees",Rotation2d.kCW_90deg.getDegrees());
         swerveDrive.setModuleStates(desiredSwerveModuleStates);
     }

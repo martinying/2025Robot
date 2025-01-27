@@ -16,7 +16,6 @@ import frc.robot.constants.DriveConstants;
 
 public class SwerveDrive extends SubsystemBase {
     private final Canandgyro m_imu = new Canandgyro(DriveConstants.IMU_CAN_ID);
-    private SwerveModuleIOInputsAutoLogged[] inputs = {new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged(),new SwerveModuleIOInputsAutoLogged()};
     private SwerveModule[] swerveModules = new SwerveModule[4];
     private SwerveModulePosition[] lastSwerveModulePositions = new SwerveModulePosition[4];
     private SwerveModulePosition[] moduleDeltas = {new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition(), new SwerveModulePosition()};
@@ -31,12 +30,14 @@ public class SwerveDrive extends SubsystemBase {
 
         //initialize inputs
         for(int counter = 0; counter < 4; counter++) {
-            swerveModules[counter].updateInputs(inputs[counter]);
+            swerveModules[counter].updateInputs();
         }
+        lastSwerveModulePositions = getModulePositions();
 
         odometry  = new SwerveDriveOdometry(DriveConstants.kDriveKinematics, getMeasuredAngle(), getModulePositions());
     }
 
+    @AutoLogOutput(key = "Gyro/Angle")
     public Rotation2d getMeasuredAngle() {
         if(RobotBase.isReal()) {
             rawGyroRotation = m_imu.getRotation2d();
@@ -62,8 +63,9 @@ public class SwerveDrive extends SubsystemBase {
         for(int counter = 0; counter < 4; counter++) {
             swerveModules[counter].setModuleState(desiredSwerveModuleStates[counter]);
             if(RobotBase.isSimulation()){//prepare info to simulate gyro
-                swerveModules[counter].updateInputs(inputs[counter]);//need updated inputs for delta calculations
-                SwerveModulePosition currentPosition = swerveModules[counter].getPosition(inputs[counter]);
+                swerveModules[counter].updateInputs();//need updated inputs for delta calculations
+                SwerveModulePosition currentPosition = swerveModules[counter].getPosition();
+
                 moduleDeltas[counter] = new SwerveModulePosition(
                     currentPosition.distanceMeters
                     - lastSwerveModulePositions[counter].distanceMeters,
@@ -77,13 +79,12 @@ public class SwerveDrive extends SubsystemBase {
     @Override
     public void periodic() {
         for(int counter = 0; counter < 4; counter++) {
-            swerveModules[counter].updateInputs(inputs[counter]);
-            Logger.processInputs("SwerveDrive/Module/"+counter, inputs[counter]);
+            swerveModules[counter].updateInputs();
+            Logger.processInputs("SwerveDrive/Module/"+counter,swerveModules[counter].getInputs());
         }
 
         //pulled out so we can record the module postions
         SwerveModulePosition[] currentSwerveModulePositions = getModulePositions();
-        Logger.recordOutput("SwerveDirve/ModulePositions", currentSwerveModulePositions);
 
         odometry.update(getMeasuredAngle(), currentSwerveModulePositions);
 
@@ -104,7 +105,7 @@ public class SwerveDrive extends SubsystemBase {
     private SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] states = new SwerveModulePosition[4];
         for (int counter = 0; counter < 4; counter++) {
-          states[counter] = swerveModules[counter].getPosition(inputs[counter]);
+          states[counter] = swerveModules[counter].getPosition();
         }
         return states;
       }

@@ -47,6 +47,8 @@ public class SwerveModule {
     // public Rotation2d[] odometryTurnPositions = new Rotation2d[] {};
     }
 
+    private final SwerveModuleIOInputsAutoLogged inputs = new SwerveModuleIOInputsAutoLogged();
+
     private final DutyCycleEncoder absoluteEncoder;
 
     private final TalonFX driveMotorController;
@@ -110,7 +112,7 @@ public class SwerveModule {
         }
     }
 
-    public void updateInputs(SwerveModuleIOInputs inputs){
+    public void updateInputs() {
         BaseStatusSignal.refreshAll(driveAngularVelocity, drivePosition, driveVoltsAppliedToMotor, driveVoltsSuppliedToMotorController, turnPosition, turnVoltsAppliedToMotor, turnVoltsSuppliedToMotorController);
 
         inputs.driveVelocityRadPerSec=Units.rotationsToRadians(driveAngularVelocity.getValueAsDouble());
@@ -123,13 +125,22 @@ public class SwerveModule {
         inputs.turnVoltsAppliedToMotor=turnVoltsAppliedToMotor.getValueAsDouble();
         inputs.turnVoltsSuppliedToMotorController=turnVoltsSuppliedToMotorController.getValueAsDouble();
 
-        //to represent the module angle we will assume the absolute encoder is the source of true
-        inputs.absoluteEncoderPosition = getAbsoluteEncoderPosition(); //this handles both real and simulation values
+        //to represent the module angle we will assume the absolute encoder is the source of truth
+        //this handles both real and simulation values
+        if(RobotBase.isSimulation()) {
+            inputs.absoluteEncoderPosition = inputs.turnMotorControllerPosition;
+        } else {
+            inputs.absoluteEncoderPosition = new Rotation2d(absoluteEncoder.get());
+        }
+    }
+
+    public SwerveModuleIOInputsAutoLogged getInputs() {
+        return inputs;
     }
 
     public void setModuleState(SwerveModuleState desiredSwerveModuleStates) {
         //figures out if it only needs to do a smaller angle change and run the motor in the reverse direction
-        desiredSwerveModuleStates.optimize(getAbsoluteEncoderPosition());
+        desiredSwerveModuleStates.optimize(inputs.absoluteEncoderPosition);
 
         //omega (angular velocity in radians per second) = velocity/radius
         double desiredSpeedOfTheWheelInAngularVelocity = desiredSwerveModuleStates.speedMetersPerSecond/Preferences.getDouble(PreferenceKeys.WHEEL_RADIUS_METERS, DriveConstants.WHEEL_RADIUS_DEFAULT_VALUE);
@@ -148,6 +159,7 @@ public class SwerveModule {
         driveMotorSim.update(.001);//This seems to be the sim update frequency that seems to be the closest to reality.  Not sure why.
         //the driveMotorSim seems to half the angular velocity, not sure why - simulation is accurate up to half the angular velocity
         driveMotorControllerSimState.setRotorVelocity(driveMotorSim.getAngularVelocity());
+        driveMotorControllerSimState.setRawRotorPosition(driveMotorSim.getAngularPosition());
 
         turnMotorSim.setAngle(desiredAngleOfTheWheelInRadians);//expect radians
         turnMotorSim.update(.001);
@@ -155,17 +167,7 @@ public class SwerveModule {
     }
 
     //needed to simulate gyro and for odometry
-    public SwerveModulePosition getPosition(SwerveModuleIOInputs inputs) {
+    public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(inputs.drivePositionRad * Preferences.getDouble(PreferenceKeys.WHEEL_RADIUS_METERS, DriveConstants.WHEEL_RADIUS_DEFAULT_VALUE), inputs.absoluteEncoderPosition);
-    }
-
-    private Rotation2d getAbsoluteEncoderPosition() {
-        Rotation2d result;
-        if(RobotBase.isSimulation()) {
-            result = new Rotation2d(turnMotorSim.getAngularPositionRad());
-        } else {
-            result = new Rotation2d(absoluteEncoder.get());
-        }
-        return result;
     }
 }
