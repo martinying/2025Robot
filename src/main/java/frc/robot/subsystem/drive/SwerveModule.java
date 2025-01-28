@@ -1,4 +1,4 @@
-package frc.robot.subsystem;
+package frc.robot.subsystem.drive;
 
 import org.littletonrobotics.junction.AutoLog;
 
@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.PreferenceKeys;
+import frc.robot.subsystem.drive.SwerveModuleIOInputsAutoLogged;
 
 public class SwerveModule {
 
