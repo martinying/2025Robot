@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.DriveConstants;
 import frc.robot.constants.IOConstants;
 import frc.robot.constants.PreferenceKeys;
-import frc.robot.subsystem.SwerveDrive;
+import frc.robot.subsystem.drive.SwerveDrive;
 
 public class SwerveJoystick extends Command {
     private final Joystick joyStick;
