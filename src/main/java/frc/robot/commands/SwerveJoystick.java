@@ -1,10 +1,6 @@
 package frc.robot.commands;
 
-import org.littletonrobotics.junction.Logger;
-
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -61,14 +57,6 @@ public class SwerveJoystick extends Command {
 
         //IN TELEOP WE WANT FIELD RELATIVE
         ChassisSpeeds chassisSpeed = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, turningSpeed, swerveDrive.getMeasuredAngle());
-        Logger.recordOutput(getName()+"/ChassisSpeed", chassisSpeed);
-
-        SwerveModuleState [] desiredSwerveModuleStates = DriveConstants.kDriveKinematics.toSwerveModuleStates(chassisSpeed);
-        //Using recordOutputs allows for AdvantageScope integraiton during simulation to see in the UI each ServeModule vector and angle
-        Logger.recordOutput(getName()+"/DesiredSwerveModuleStates", desiredSwerveModuleStates);
-        double [] moduleAnglesInDegrees = {desiredSwerveModuleStates[0].angle.getDegrees(), desiredSwerveModuleStates[1].angle.getDegrees(), desiredSwerveModuleStates[2].angle.getDegrees(), desiredSwerveModuleStates[3].angle.getDegrees()};
-        Logger.recordOutput(getName()+"/ModuleAnglesInDegrees", moduleAnglesInDegrees);
-        Logger.recordOutput(getName()+"/CounterClockwiseBy90Degrees",Rotation2d.kCW_90deg.getDegrees());
-        swerveDrive.setModuleStates(desiredSwerveModuleStates);
+        swerveDrive.driveRobot(chassisSpeed, null);
     }
 }

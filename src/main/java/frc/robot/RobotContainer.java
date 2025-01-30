@@ -4,9 +4,14 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.Logger;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.commands.SwerveJoystick;
 import frc.robot.constants.IOConstants;
 import frc.robot.subsystem.drive.SwerveDrive;
@@ -14,10 +19,13 @@ import frc.robot.subsystem.drive.SwerveDrive;
 public class RobotContainer {
   private final Joystick joyStick = new Joystick(IOConstants.kDriveJoystickId);
   private SwerveDrive swerveDrive = new SwerveDrive();
+  private final SendableChooser<Command> autoChooser;
 
   public RobotContainer() {
     bindCommandsToSubsystems();
     configureBindings();
+    autoChooser = AutoBuilder.buildAutoChooser();
+    SmartDashboard.putData("Auto Chooser",autoChooser);
   }
 
   private void bindCommandsToSubsystems() {
@@ -27,6 +35,6 @@ public class RobotContainer {
   private void configureBindings() {}
 
   public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
+    return autoChooser.getSelected();
   }
 }

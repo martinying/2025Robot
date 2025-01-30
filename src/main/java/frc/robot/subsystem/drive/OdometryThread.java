@@ -31,7 +31,7 @@ public class OdometryThread implements Runnable{
 
         updateInputs();//initialize inputs
         lastSwerveModulePositions = getModulePositions();//prepare for delta calculations
-        odometry  = new SwerveDriveOdometry(DriveConstants.kDriveKinematics, getMeasuredAngle(), getModulePositions());
+        odometry  = new SwerveDriveOdometry(DriveConstants.kDriveKinematics, getMeasuredAngle(), lastSwerveModulePositions);
     }
 
     @Override
@@ -55,6 +55,19 @@ public class OdometryThread implements Runnable{
                 calculateSwerveModuleDeltas(counter);                
             }
         }
+    }
+
+    public synchronized SwerveModuleState [] getModuleStates() {
+        updateInputs();
+        SwerveModuleState[] states = new SwerveModuleState[4];
+        for (int counter = 0; counter < 4; counter++) {
+            states[counter] = swerveModules[counter].getState();
+        }    
+        return states;
+    }
+
+    public void resetPosition(Pose2d pose) {
+        odometry.resetPosition(getMeasuredAngle(),getModulePositions(),pose);
     }
     
     @AutoLogOutput(key = "Gyro/Angle")
@@ -95,10 +108,11 @@ public class OdometryThread implements Runnable{
     }
 
     private synchronized SwerveModulePosition[] getModulePositions() {
-        SwerveModulePosition[] states = new SwerveModulePosition[4];
+        updateInputs();
+        SwerveModulePosition[] positons = new SwerveModulePosition[4];
         for (int counter = 0; counter < 4; counter++) {
-            states[counter] = swerveModules[counter].getPosition();
+            positons[counter] = swerveModules[counter].getPosition();
         }    
-        return states;
+        return positons;
     }
 }

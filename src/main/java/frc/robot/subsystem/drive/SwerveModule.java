@@ -171,4 +171,8 @@ public class SwerveModule {
     public SwerveModulePosition getPosition() {
         return new SwerveModulePosition(inputs.drivePositionRad * Preferences.getDouble(PreferenceKeys.WHEEL_RADIUS_METERS, DriveConstants.WHEEL_RADIUS_DEFAULT_VALUE), inputs.absoluteEncoderPosition);
     }
+
+    public SwerveModuleState getState() {
+        return new SwerveModuleState(inputs.driveVelocityRadPerSec * Preferences.getDouble(PreferenceKeys.WHEEL_RADIUS_METERS, DriveConstants.WHEEL_RADIUS_DEFAULT_VALUE), inputs.absoluteEncoderPosition);
+    }
 }
